@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Robo Introduction</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+            overflow: hidden;
+            flex-direction: column;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .eyes {
+            display: flex;
+            justify-content: space-around;
+            width: 300px;
+            margin-bottom: 20px;
+        }
+        .eye {
+            width: 100px;
+            height: 100px;
+            background-color: cyan;
+            border-radius: 25px;
+            box-shadow: 0 0 35px cyan;
+            transition: all 0.5s ease;
+        }
+        .talking .eye {
+            transform: scaleY(1.2);
+            background-color: yellow;
+            box-shadow: 0 0 35px yellow;
+        }
+        .start-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            font-size: 18px;
+            background-color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="eyes" id="eyes">
+        <div class="eye"></div>
+        <div class="eye"></div>
+    </div>
+    <button class="start-button" onclick="startListening()">Start Listening</button>
+
+    <script>
+        let introLines = [
+            "Hello! I am Dr. Robo, your intelligent healthcare companion. I bridge the gap between patients and doctors, providing real-time monitoring and virtual consultations. With advanced robotics and IoT, I ensure seamless healthcare access anytime, anywhere. Together, we make medical care faster, smarter, and more efficient!"
+        ];
+
+        let recognition;
+        let introRunning = false;
+
+        function speak(text, callback) {
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.lang = "en-US";
+            speech.rate = 1;
+            speech.onend = callback;
+            window.speechSynthesis.speak(speech);
+        }
+
+        function animateSpeaking() {
+            let eyes = document.getElementById("eyes");
+            eyes.classList.add("talking");
+            setTimeout(() => {
+                eyes.classList.remove("talking");
+            }, 3000);
+        }
+
+        function startIntroduction() {
+            if (!introRunning) {
+                introRunning = true;
+                let index = 0;
+
+                function speakNextLine() {
+                    if (index < introLines.length) {
+                        animateSpeaking();
+                        speak(introLines[index], () => {
+                            index++;
+                            setTimeout(speakNextLine, 1000);
+                        });
+                    } else {
+                        introRunning = false;
+                    }
+                }
+                speakNextLine();
+            }
+        }
+
+        function connectMeet() {
+            window.open("https://us05web.zoom.us/j/8405820418?pwd=6DbbPStaga1OUb1acQtIiQUs1rkWQv.1", "_blank");
+        }
+
+        function startListening() {
+            if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+                alert("Speech recognition is not supported in your browser. Try Chrome!");
+                return;
+            }
+
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+
+            recognition.onresult = function(event) {
+                let transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+                console.log("Heard: " + transcript);
+
+                if (transcript.includes("hello dr robo") || transcript.includes("start introduction") || transcript.includes("introduce yourself") || transcript.includes("intro") || transcript.includes("start intro")) {
+                    startIntroduction();
+                } else if (transcript.includes("connect meet") || transcript.includes("connect me with a doctor") || transcript.includes("mujhe doctor se baat karni hai")) {
+                    connectMeet();
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error", event);
+                alert("Speech recognition error: " + event.error);
+            };
+
+            recognition.onend = function() {
+                console.log("Speech recognition ended. Restarting...");
+                setTimeout(() => recognition.start(), 1000);
+            };
+
+            recognition.start();
+            alert("Listening... Say 'Hello Dr. Robo', 'Introduce Yourself', 'Start Intro', or 'Connect Meet'");
+        }
+    </script>
+</body>
+</html>
